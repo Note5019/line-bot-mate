@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use App\Actions\PushLineMessage;
 use App\Actions\BuildGoldLineMessage;
-use App\Actions\GetGoldPrice;
+use App\Actions\FetchGoldPrice;
 
 class TestPushLineMsg extends Command
 {
@@ -141,7 +141,7 @@ class TestPushLineMsg extends Command
 
   public function handle()
   {
-    $data = GetGoldPrice::execute();
+    $data = FetchGoldPrice::execute();
 
     // save gold price to DB
 

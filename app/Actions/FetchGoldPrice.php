@@ -4,7 +4,7 @@ namespace App\Actions;
 
 use Illuminate\Support\Facades\Http;
 
-class GetGoldPrice
+class FetchGoldPrice
 {
   public static function execute(): array
   {
