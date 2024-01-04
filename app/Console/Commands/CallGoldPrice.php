@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\FetchGoldPrice;
+use App\Actions\SaveGoldPrice;
+use App\Models\Gold;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 
 class CallGoldPrice extends Command
 {
@@ -12,26 +14,26 @@ class CallGoldPrice extends Command
      *
      * @var string
      */
-    protected $signature = 'app:call-gold-price';
+    protected $signature = 'gold:fetch';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Fetch gold price and save to database';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $response = Http::withHeaders([
-            'Accept' => 'application/json',
-        ])->get('https://apicheckprice.huasengheng.com/api/values/getprice', []);
-        $data = $response->json();
-        foreach($data as $row) {
-            $this->info("{$row['GoldType']} {$row["GoldCode"]}: buy [{$row["Buy"]}], sell [{$row["Sell"]}]");
-        }
+        $data = FetchGoldPrice::execute();
+
+        $rawGold = collect($data)->filter(function ($item) {
+            return $item['GoldType'] === Gold::GOLD_TYPE && $item['GoldCode'] === Gold::GOLD_CODE;
+        })->first();
+
+        SaveGoldPrice::execute($rawGold);
     }
 }
