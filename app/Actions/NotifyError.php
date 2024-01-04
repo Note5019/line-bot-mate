@@ -9,9 +9,11 @@ class NotifyError
   public static function execute(string $topic, string $message): void
   {
     $msgPayload = [
-      "type" => "flex",
-      "altText" => $topic,
-      "contents" => self::message($topic, $message),
+      [
+        "type" => "flex",
+        "altText" => $topic,
+        "contents" => self::message($topic, $message),
+      ]
     ];
 
     PushLineMessage::execute($msgPayload);

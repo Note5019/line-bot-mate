@@ -80,7 +80,7 @@ class HandleLineMsg
       ]);
       $res->code = ResponseCode::OK;
       $res->topic = '[ซื้อทอง] สำเร็จ';
-      $res->message = 'บันทึกข้อมูลลงระบบเรียบร้อย, ขอให้โชคดีจ้า 🍀🍀🍀';
+      $res->message = 'บันทึกข้อมูลลงระบบเรียบร้อย';
     } catch (Exception $e) {
       \Log::error($e->getMessage());
 
@@ -104,9 +104,11 @@ class HandleLineMsg
 
     $msg = json_decode($json, true);
     $msgPayload = [
-      "type" => "flex",
-      "altText" => 'เมนู',
-      "contents" => $msg,
+      [
+        "type" => "flex",
+        "altText" => 'เมนู',
+        "contents" => $msg,
+      ]
     ];
 
     PushLineMessage::execute($msgPayload);

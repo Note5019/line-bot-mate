@@ -19,7 +19,7 @@ class PushLineMessage
       //     "contents" => $msgPayload,
       //   ]
       // ]
-      'messages' => [$msgPayload],
+      'messages' => $msgPayload,
     ];
 
     $response = Http::withHeaders([

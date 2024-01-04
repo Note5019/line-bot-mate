@@ -18,7 +18,7 @@ class NotifySellMyGold
         ]
       ];
     }
-    PushLineMessage::execute($msgPayload);
+    PushLineMessage::execute([$msgPayload]);
     \Log::info('push msg!');
   }
 

@@ -9,8 +9,10 @@ class NotifyMessage
   public static function execute(string $message): void
   {
     $msgPayload = [
-      "type" => "text",
-      "text" => "$message",
+      [
+        "type" => "text",
+        "text" => "$message",
+      ]
     ];
 
     PushLineMessage::execute($msgPayload);
