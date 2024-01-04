@@ -43,14 +43,26 @@ class HandleLineMsg
   public function handleCmd()
   {
     return match ($this->cmd) {
-      'buy' => $this->buyGold($this->arguments),
+      'buy' => $this->buyGold(),
       'trends' => '',
       'sell' => '',
       'remove' => '',
       'update_target_sell_price' => '',
       'update_target_baht_profit' => '',
-      'menu' => '',
+      'menu' => $this->displayMenu(),
+      'template' => $this->displatTemplate(),
+      default => $this->notFoundCmd(),
     };
+  }
+
+  public function notFoundCmd(): HandlerResponse
+  {
+    $message = "ไม่พบคำสั่งนี้";
+
+    NotifyMessage::execute($message);
+    $res = new HandlerResponse();
+    $res->code = ResponseCode::OK_NO_RESPONSE;
+    return $res;
   }
 
   public function buyGold(): HandlerResponse
@@ -78,5 +90,45 @@ class HandleLineMsg
     } finally {
       return $res;
     }
+  }
+
+  public function displayMenu(): HandlerResponse
+  {
+    $json = '{"type":"bubble","body":{"type":"box","layout":"vertical","contents":[{"type":"box","layout":"vertical","contents":[{"type":"text","text":"Template","align":"center"},{"type":"box","layout":"horizontal","contents":[{"type":"button","action":{"type":"message","label":"##label_1","text":"##text_1"},"style":"primary"},{"type":"button","action":{"type":"message","label":"##label_2","text":"##text_1"},"style":"secondary","margin":"md"},{"type":"button","action":{"type":"message","label":"##label_3","text":"##text_3"},"style":"secondary","margin":"md"}],"margin":"md"}]}]}}';
+    $json = str_replace('##label_1', 'buy', $json);
+    $json = str_replace('##text_1', "template\\nmenu:buy", $json);
+    $json = str_replace('##label_2', 'trends', $json);
+    $json = str_replace('##text_2', "template\\nmenu:trend", $json);
+    $json = str_replace('##label_3', 'sell', $json);
+    $json = str_replace('##text_3', "template\\nmenu:sell", $json);
+
+    $msg = json_decode($json, true);
+    $msgPayload = [
+      "type" => "flex",
+      "altText" => 'เมนู',
+      "contents" => $msg,
+    ];
+
+    PushLineMessage::execute($msgPayload);
+    $res = new HandlerResponse();
+    $res->code = ResponseCode::OK_NO_RESPONSE;
+    return $res;
+  }
+
+  public function displatTemplate(): HandlerResponse
+  {
+    return match ($this->arguments['menu']) {
+      'buy' => $this->displayBuyTemplate(),
+    };
+  }
+
+  public function displayBuyTemplate(): HandlerResponse
+  {
+    $message = "Buy\nbuy_price:\nvalue:\nweight:\ncode:\ntarget_sell_price:\ntarget_baht_profit:";
+
+    NotifyMessage::execute($message);
+    $res = new HandlerResponse();
+    $res->code = ResponseCode::OK_NO_RESPONSE;
+    return $res;
   }
 }
