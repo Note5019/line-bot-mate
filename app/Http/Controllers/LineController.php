@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\HandleLineMsg;
 use App\Actions\NotifyError;
+use App\Actions\NotifyMessage;
 use App\Enums\ResponseCode;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,7 @@ class LineController extends Controller
         if ($res->code > ResponseCode::OK) {
             NotifyError::execute($res->topic, $res->message);
         } else {
-            // TODO: success notify
+            NotifyMessage::execute($res->topic, $res->message);
         }
 
         return ['success' => true];
