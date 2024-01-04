@@ -205,7 +205,7 @@ class HandleLineMsg
 
   public function displayGoldPrice(): HandlerResponse
   {
-    $json = '{"type":"bubble","header":{"type":"box","layout":"vertical","contents":[{"type":"text","text":"##topic","size":"lg"}],"backgroundColor":"#80BCBD"},"body":{"type":"box","layout":"vertical","contents":[{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"ซื้อ"},{"type":"text","align":"end","text":"##buy_icon"},{"type":"text","text":"##buy","contents":[],"align":"end"}]},{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"ขาย"},{"type":"text","text":"##sell_icon","align":"end"},{"type":"text","text":"##sell","contents":[],"align":"end"}]}],"backgroundColor":"#AAD9BB"},"footer":{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"##datetime","size":"sm"}],"backgroundColor":"#F9F7C9"},"styles":{"hero":{"separator":true}}}';
+    $json = '{"type":"bubble","header":{"type":"box","layout":"vertical","contents":[{"type":"text","text":"##topic","size":"lg"}],"backgroundColor":"#80BCBD"},"body":{"type":"box","layout":"vertical","contents":[{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"ซื้อ"},{"type":"text","align":"end","text":"##buy_icon"},{"type":"text","text":"##buy","contents":[],"align":"end"}]},{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"ขาย"},{"type":"text","text":"##sell_icon","align":"end"},{"type":"text","text":"##sell","contents":[],"align":"end"}]}],"backgroundColor":"#AAD9BB"},"footer":{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"##datetime","size":"xxs"}],"backgroundColor":"#F9F7C9"},"styles":{"hero":{"separator":true}}}';
 
     $data = FetchGoldPrice::execute();
 
