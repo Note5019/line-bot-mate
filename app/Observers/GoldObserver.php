@@ -11,7 +11,8 @@ class GoldObserver
 {
     public function created(Gold $gold): void
     {
-        if (!ValidGoldPriceChanged::execute($gold)) {
+        if (config('settings.notify_only_gold_change') && !ValidGoldPriceChanged::execute($gold)) {
+            \Log::info('gold price not changed');
             return;
         }
 
