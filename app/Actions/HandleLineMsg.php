@@ -23,12 +23,8 @@ class HandleLineMsg
   public function execute(): HandlerResponse
   {
     $this->transformCmd();
-    dump($this->rawCmd);
-    dump($this->cmd);
-    dump($this->arguments);
 
     return $this->handleCmd();
-    // return false;
   }
 
   public function transformCmd(): void
@@ -75,12 +71,11 @@ class HandleLineMsg
       $res->message = 'ขอให้โชคดีจ้า 🍀🍀🍀';
     } catch (Exception $e) {
       \Log::error($e->getMessage());
-      dump($e->getMessage());
+
       $res->code = ResponseCode::ERROR;
       $res->topic = '💥 เกิดข้อผิดพลาดในขั้นตอนการซื้อทอง';
       $res->message = 'erro: ' . $e->getMessage();
     } finally {
-      dump($res);
       return $res;
     }
   }
