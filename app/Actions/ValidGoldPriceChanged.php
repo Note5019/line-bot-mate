@@ -10,6 +10,10 @@ class ValidGoldPriceChanged
   {
     $latest = Gold::whereNot('id', $currentGold->id)->orderBy('id', 'desc')->first();
 
+    if (!$latest) {
+      return false;
+    }
+
     return ($currentGold->buy - $latest->buy) > 0;
   }
 }
