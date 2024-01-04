@@ -28,5 +28,6 @@ class Gold extends Model
         'sell' => 'float',
         'buy_change' => 'float',
         'sell_change' => 'float',
+        'time_update' => 'datetime',
     ];
 }
