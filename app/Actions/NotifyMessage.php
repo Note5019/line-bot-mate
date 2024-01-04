@@ -6,11 +6,11 @@ use App\Actions\PushLineMessage;
 
 class NotifyMessage
 {
-  public static function execute(string $topic, string $message): void
+  public static function execute(string $message): void
   {
     $msgPayload = [
       "type" => "text",
-      "text" => "$topic, $message",
+      "text" => "$message",
     ];
 
     PushLineMessage::execute($msgPayload);

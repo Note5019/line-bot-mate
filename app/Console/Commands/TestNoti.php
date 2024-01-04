@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Actions\NotifyError;
+use App\Actions\NotifyMessage;
 use Illuminate\Console\Command;
 
 class TestNoti extends Command
@@ -28,6 +29,7 @@ class TestNoti extends Command
     {
         $topic = 'หัวเรื่อง';
         $message = 'ข้อความ';
-        NotifyError::execute($topic, $message);
+        // NotifyError::execute($topic, $message);
+        NotifyMessage::execute("$topic, $message");
     }
 }

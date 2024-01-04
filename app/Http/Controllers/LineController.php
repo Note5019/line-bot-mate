@@ -16,12 +16,12 @@ class LineController extends Controller
         $msg = $input['events'][0]['message']['text'];
         $handler = new HandleLineMsg($msg);
         $res = $handler->execute();
-
-        if ($res->code > ResponseCode::OK) {
-            NotifyError::execute($res->topic, $res->message);
-        } else {
-            NotifyMessage::execute($res->topic, $res->message);
-        }
+        
+        match (true) {
+            $res->code->value > ResponseCode::OK->value =>  NotifyError::execute($res->topic, $res->message),
+            $res->code->value == ResponseCode::OK->value => NotifyMessage::execute("$res->topic, $res->message"),
+            default => null,
+        };
 
         return ['success' => true];
     }
