@@ -10,9 +10,11 @@ use Illuminate\Http\Request;
 
 class LineController extends Controller
 {
-    public function handle(Request $request)
+    public function handleMsg(Request $request)
     {
-        $handler = new HandleLineMsg($request->input());
+        $input = $request->input();
+        $msg = $input['events'][0]['message']['text'];
+        $handler = new HandleLineMsg($msg);
         $res = $handler->execute();
 
         if ($res->code > ResponseCode::OK) {

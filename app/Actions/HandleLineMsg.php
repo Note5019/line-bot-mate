@@ -9,13 +9,13 @@ use Exception;
 
 class HandleLineMsg
 {
-  protected array $lineMsg = [];
+  protected string $lineMsg = '';
   protected array $rawCmd = [];
 
   protected ?string $cmd = null;
   protected array $arguments = [];
 
-  public function __construct(array $lineMsg)
+  public function __construct(string $lineMsg)
   {
     $this->lineMsg = $lineMsg;
   }
@@ -29,8 +29,7 @@ class HandleLineMsg
 
   public function transformCmd(): void
   {
-    $msg = $this->lineMsg['events'][0]['message']['text'];
-    $this->rawCmd = explode("\n", str_replace(' ', '', $msg));
+    $this->rawCmd = explode("\n", str_replace(' ', '', $this->lineMsg));
     $this->cmd = strtolower($this->rawCmd[0]);
 
     for ($i = 1; $i < count($this->rawCmd); $i++) {
@@ -50,6 +49,7 @@ class HandleLineMsg
       'remove' => '',
       'update_target_sell_price' => '',
       'update_target_baht_profit' => '',
+      'menu' => '',
     };
   }
 
