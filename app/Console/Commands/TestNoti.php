@@ -30,6 +30,6 @@ class TestNoti extends Command
         $topic = 'หัวเรื่อง';
         $message = 'ข้อความ';
         // NotifyError::execute($topic, $message);
-        NotifyMessage::execute("$topic, $message");
+        // NotifyMessage::execute("$topic, $message");
     }
 }

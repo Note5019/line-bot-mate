@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Enums\ResponseCode;
+use App\Models\Gold;
 use App\Models\HandlerResponse;
 use App\Models\MyGold;
 use Exception;
@@ -44,13 +45,14 @@ class HandleLineMsg
   {
     return match ($this->cmd) {
       'buy' => $this->buyGold(),
-      'trends' => '',
+      'trends' => '', // graph 
       'sell' => $this->sellGold(),
       'remove' => $this->removeGold(),
       'update_target_sell_price' => '',
       'update_target_baht_profit' => '',
       'menu' => $this->displayMenu(),
       'template' => $this->displatTemplate(),
+      'gold_price' => $this->displayGoldPrice(),
       default => $this->notFoundCmd(),
     };
   }
@@ -137,13 +139,15 @@ class HandleLineMsg
 
   public function displayMenu(): HandlerResponse
   {
-    $json = '{"type":"bubble","body":{"type":"box","layout":"vertical","contents":[{"type":"box","layout":"vertical","contents":[{"type":"text","text":"Template","align":"center"},{"type":"box","layout":"horizontal","contents":[{"type":"button","action":{"type":"message","label":"##label_1","text":"##text_1"},"style":"primary"},{"type":"button","action":{"type":"message","label":"##label_2","text":"##text_2"},"style":"link","margin":"md"},{"type":"button","action":{"type":"message","label":"##label_3","text":"##text_3"},"style":"secondary","margin":"md"}],"margin":"md"}]}]}}';
+    $json = '{"type":"bubble","body":{"type":"box","layout":"vertical","contents":[{"type":"box","layout":"vertical","contents":[{"type":"text","text":"Transaction Template","align":"center"},{"type":"box","layout":"horizontal","contents":[{"type":"button","action":{"type":"message","label":"##label_1","text":"##text_1"},"style":"primary"},{"type":"button","action":{"type":"message","label":"##label_2","text":"##text_2"},"style":"link","margin":"md"},{"type":"button","action":{"type":"message","label":"##label_3","text":"##text_3"},"style":"secondary","margin":"md"}],"margin":"md"}]},{"type":"separator","margin":"md"},{"type":"box","layout":"vertical","contents":[{"type":"text","align":"center","text":"Action"},{"type":"box","layout":"horizontal","contents":[{"type":"button","action":{"type":"message","label":"##label_4","text":"##text_4"},"style":"primary"}],"margin":"md"}],"margin":"md"}]}}';
     $json = str_replace('##label_1', 'ซื้อ', $json);
     $json = str_replace('##text_1', "template\\nmenu:buy", $json);
     $json = str_replace('##label_2', 'ลบ', $json);
     $json = str_replace('##text_2', "template\\nmenu:remove", $json);
     $json = str_replace('##label_3', 'ขาย', $json);
     $json = str_replace('##text_3', "template\\nmenu:sell", $json);
+    $json = str_replace('##label_4', 'ราคาทอง', $json);
+    $json = str_replace('##text_4', "gold_price", $json);
 
     $msg = json_decode($json, true);
     $msgPayload = [
@@ -194,6 +198,40 @@ class HandleLineMsg
     $message = "Remove\ncode:";
 
     NotifyMessage::execute($message);
+    $res = new HandlerResponse();
+    $res->code = ResponseCode::OK_NO_RESPONSE;
+    return $res;
+  }
+
+  public function displayGoldPrice(): HandlerResponse
+  {
+    $json = '{"type":"bubble","header":{"type":"box","layout":"vertical","contents":[{"type":"text","text":"##topic","size":"lg"}],"backgroundColor":"#80BCBD"},"body":{"type":"box","layout":"vertical","contents":[{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"ซื้อ"},{"type":"text","align":"end","text":"##buy_icon"},{"type":"text","text":"##buy","contents":[],"align":"end"}]},{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"ขาย"},{"type":"text","text":"##sell_icon","align":"end"},{"type":"text","text":"##sell","contents":[],"align":"end"}]}],"backgroundColor":"#AAD9BB"},"footer":{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"##datetime","size":"sm"}],"backgroundColor":"#F9F7C9"},"styles":{"hero":{"separator":true}}}';
+
+    $data = FetchGoldPrice::execute();
+
+    $rawGold = collect($data)->filter(function ($item) {
+      return $item['GoldType'] === Gold::GOLD_TYPE && $item['GoldCode'] === Gold::GOLD_CODE;
+    })->first();
+    $topic = "ราคาทองคำ {$rawGold['GoldType']}-{$rawGold['GoldCode']}%";
+    $buyIcon = ($rawGold['BuyChange'] > 0 ? '🟢' : '🔴') . ' ' . $rawGold['BuyChange'];
+    $sellIcon =($rawGold['SellChange'] > 0 ? '🟢' : '🔴') . ' ' . $rawGold['SellChange'];;
+    $json = str_replace('##topic', $topic, $json);
+    $json = str_replace('##buy_icon', $buyIcon, $json);
+    $json = str_replace('##buy', $rawGold['Buy'], $json);
+    $json = str_replace('##sell_icon', $sellIcon, $json);
+    $json = str_replace('##sell', $rawGold['Sell'], $json);
+    $json = str_replace('##datetime', $rawGold['StrTimeUpdate'], $json);
+
+    $msg = json_decode($json, true);
+    $msgPayload = [
+      [
+        "type" => "flex",
+        "altText" => 'ราคาทอง ณ',
+        "contents" => $msg,
+      ]
+    ];
+
+    PushLineMessage::execute($msgPayload);
     $res = new HandlerResponse();
     $res->code = ResponseCode::OK_NO_RESPONSE;
     return $res;
