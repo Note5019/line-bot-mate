@@ -2,13 +2,13 @@
 
 namespace Tests\Feature;
 
-use App\Actions\ValidGoldPriceDiff;
+use App\Actions\ValidGoldPriceChanged;
 use App\Models\Gold;
 use App\Models\MyGold;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class ValidGoldPriceDiffTest extends TestCase
+class ValidGoldPriceChangedTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -23,7 +23,7 @@ class ValidGoldPriceDiffTest extends TestCase
         $currentGold = Gold::factory()->create([
             'buy' => '12000',
         ]);
-        $this->assertFalse(ValidGoldPriceDiff::execute($currentGold));
+        $this->assertFalse(ValidGoldPriceChanged::execute($currentGold));
     }
 
     public function test_valid_gold_price_true(): void
@@ -37,6 +37,6 @@ class ValidGoldPriceDiffTest extends TestCase
         $currentGold = Gold::factory()->create([
             'buy' => '12000',
         ]);
-        $this->assertTrue(ValidGoldPriceDiff::execute($currentGold));
+        $this->assertTrue(ValidGoldPriceChanged::execute($currentGold));
     }
 }
