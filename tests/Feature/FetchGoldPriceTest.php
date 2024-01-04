@@ -8,7 +8,7 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-class FetchGoldTest extends TestCase
+class FetchGoldPriceTest extends TestCase
 {
     use RefreshDatabase;
 
