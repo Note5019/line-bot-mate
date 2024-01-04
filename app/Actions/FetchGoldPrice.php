@@ -14,6 +14,7 @@ class FetchGoldPrice
 
     if ($response->status() > 200) {
       \Log::error($response->json());
+      // TODO: line noti error
     }
 
     return $response->json();
