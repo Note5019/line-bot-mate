@@ -7,6 +7,7 @@ use App\Models\Gold;
 use App\Models\HandlerResponse;
 use App\Models\MyGold;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 
 class HandleLineMsg
 {
@@ -53,6 +54,7 @@ class HandleLineMsg
       'menu' => $this->displayMenu(),
       'template' => $this->displatTemplate(),
       'gold_price' => $this->displayGoldPrice(),
+      'my_gold' => $this->displayMyGold(),
       default => $this->notFoundCmd(),
     };
   }
@@ -139,7 +141,7 @@ class HandleLineMsg
 
   public function displayMenu(): HandlerResponse
   {
-    $json = '{"type":"bubble","body":{"type":"box","layout":"vertical","contents":[{"type":"box","layout":"vertical","contents":[{"type":"text","text":"Transaction Template","align":"center"},{"type":"box","layout":"horizontal","contents":[{"type":"button","action":{"type":"message","label":"##label_1","text":"##text_1"},"style":"primary"},{"type":"button","action":{"type":"message","label":"##label_2","text":"##text_2"},"style":"link","margin":"md"},{"type":"button","action":{"type":"message","label":"##label_3","text":"##text_3"},"style":"secondary","margin":"md"}],"margin":"md"}]},{"type":"separator","margin":"md"},{"type":"box","layout":"vertical","contents":[{"type":"text","align":"center","text":"Action"},{"type":"box","layout":"horizontal","contents":[{"type":"button","action":{"type":"message","label":"##label_4","text":"##text_4"},"style":"primary"}],"margin":"md"}],"margin":"md"}]}}';
+    $json = '{"type":"bubble","body":{"type":"box","layout":"vertical","contents":[{"type":"box","layout":"vertical","contents":[{"type":"text","text":"Transaction Template","align":"center"},{"type":"box","layout":"horizontal","contents":[{"type":"button","action":{"type":"message","label":"##label_1","text":"##text_1"},"style":"primary"},{"type":"button","action":{"type":"message","label":"##label_2","text":"##text_2"},"style":"link","margin":"md"},{"type":"button","action":{"type":"message","label":"##label_3","text":"##text_3"},"style":"secondary","margin":"md"}],"margin":"md"}]},{"type":"separator","margin":"md"},{"type":"box","layout":"vertical","contents":[{"type":"text","align":"center","text":"Action"},{"type":"box","layout":"vertical","contents":[{"type":"button","action":{"type":"message","label":"##label_4","text":"##text_4"},"style":"primary"},{"type":"button","action":{"type":"message","label":"##label_5","text":"##text_4"},"style":"secondary","margin":"md"}],"margin":"md"}],"margin":"md"}]}}';
     $json = str_replace('##label_1', 'ซื้อ', $json);
     $json = str_replace('##text_1', "template\\nmenu:buy", $json);
     $json = str_replace('##label_2', 'ลบ', $json);
@@ -148,6 +150,8 @@ class HandleLineMsg
     $json = str_replace('##text_3', "template\\nmenu:sell", $json);
     $json = str_replace('##label_4', 'ราคาทอง', $json);
     $json = str_replace('##text_4', "gold_price", $json);
+    $json = str_replace('##label_5', 'ทองของฉัน', $json);
+    $json = str_replace('##text_5', 'my_gold', $json);
 
     $msg = json_decode($json, true);
     $msgPayload = [
@@ -214,7 +218,7 @@ class HandleLineMsg
     })->first();
     $topic = "ราคาทองคำ {$rawGold['GoldType']}-{$rawGold['GoldCode']}%";
     $buyIcon = ($rawGold['BuyChange'] > 0 ? '🟢' : '🔴') . ' ' . $rawGold['BuyChange'];
-    $sellIcon =($rawGold['SellChange'] > 0 ? '🟢' : '🔴') . ' ' . $rawGold['SellChange'];;
+    $sellIcon = ($rawGold['SellChange'] > 0 ? '🟢' : '🔴') . ' ' . $rawGold['SellChange'];;
     $json = str_replace('##topic', $topic, $json);
     $json = str_replace('##buy_icon', $buyIcon, $json);
     $json = str_replace('##buy', $rawGold['Buy'], $json);
@@ -235,5 +239,50 @@ class HandleLineMsg
     $res = new HandlerResponse();
     $res->code = ResponseCode::OK_NO_RESPONSE;
     return $res;
+  }
+
+  public function displayMyGold(): HandlerResponse
+  {
+    $currentGold = Gold::orderBy('id', 'desc')->first();
+    $jsonWrapper = '{"type":"bubble","body":{"type":"box","layout":"vertical","contents":[{"type":"box","layout":"vertical","contents":[{"type":"text","text":"รายการทองของฉัน"},{"type":"separator","margin":"md"}]}##replace]},"footer":{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"ปัจจุบันทองราคา"},{"type":"text","text":"##gold_price","align":"end"}]}}';
+    $jsonWrapper = str_replace('##gold_price', $currentGold->buy, $jsonWrapper);
+
+    $myGold = MyGold::where('sold', false)->get();
+    $temp = [];
+    foreach ($myGold as $my) {
+      array_push($temp, $this->buildMyGoldDetail($my, $currentGold));
+    }
+    if (empty($temp)) {
+      $notFoundJson = '{"type":"box","layout":"vertical","contents":[{"type":"text","text":"ไม่พบข้อมูลทองคำ","align":"center"},{"type":"separator","margin":"md"}],"margin":"md"}';
+      $jsonWrapper = str_replace('##replace', ',' . $notFoundJson, $jsonWrapper);
+    } else {
+      $jsonWrapper = str_replace('##replace', ',' . implode(',', $temp), $jsonWrapper);
+    }
+
+    $msgObject = json_decode($jsonWrapper, true);
+    $msgPayload = [
+      [
+        "type" => "flex",
+        "altText" => 'รายการทองของฉัน',
+        "contents" => $msgObject,
+      ]
+    ];
+
+    PushLineMessage::execute($msgPayload);
+    $res = new HandlerResponse();
+    $res->code = ResponseCode::OK_NO_RESPONSE;
+    return $res;
+  }
+
+  public function buildMyGoldDetail(MyGold $myGold, Gold $currentGold): string
+  {
+    $profit = (($currentGold->buy - $myGold->buy_price) / Gold::GOLD_WEIGHT) * $myGold->weight;
+    $jsonDetail = '{"type":"box","layout":"vertical","contents":[{"type":"text","text":"##code"},{"type":"box","layout":"vertical","contents":[{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"##buy"},{"type":"text","text":"##value","align":"end"}]},{"type":"box","layout":"horizontal","contents":[{"type":"text","text":"กำไร","align":"end"},{"type":"text","text":"##change","align":"end","color":"##color"}]}]},{"type":"separator","margin":"md"}],"margin":"md"}';
+    $jsonDetail = str_replace('##code', '#' . $myGold->code, $jsonDetail);
+    $jsonDetail = str_replace('##buy', $myGold->buy_price, $jsonDetail);
+    $jsonDetail = str_replace('##value', $myGold->value, $jsonDetail);
+    $jsonDetail = str_replace('##change', ($profit > 0 ? '🟢 ' : '🔴 ') .  bcdiv($profit, 1, 2), $jsonDetail);
+    $jsonDetail = str_replace('##color', $profit > 0 ? '#219C90' : '#CE5A67', $jsonDetail);
+    return $jsonDetail;
   }
 }
